@@ -1,0 +1,17 @@
+[project]
+name = "mcerp2"
+version = "0.1.0"
+authors = [
+  { name="Karl Gruber", email="gammaturn@gmail.com" },
+]
+description = "Monte Carlo Error Propagation library, ndarray subclass based."
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "numpy>=2.2.5",
+    "scipy>=1.15.3",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"

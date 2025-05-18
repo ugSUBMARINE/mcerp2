@@ -100,11 +100,10 @@ area.describe()
 # Probabilistic query
 prob_area_gt_50 = (area > 50.0).mean() # P(Area > 50) using element-wise comparison
 # or using explicit method:
-# prob_area_gt_50_alt = area.prob_gt(50.0)
+# prob_area_gt_50_alt = area.sf(50.0)
 print(f"Probability Area > 50 cm^2: {prob_area_gt_50:.3f}")
 
 # Correlation example (simplified)
-import numpy as np
 from mcerp2 import correlate
 temp = mcerp2.N(25, 1, tag='temp_C')
 press = mcerp2.N(101, 0.5, tag='pressure_kPa')

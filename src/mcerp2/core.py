@@ -31,11 +31,11 @@ class UncertainFunction(np.ndarray):
 
     def __array_ufunc__(self, ufunc, method, *inputs, **kwargs):
         args = []
-        input_tags = []
+        # input_tags = []
         for x_in in inputs:
             if isinstance(x_in, UncertainFunction):
                 args.append(x_in.view(np.ndarray))
-                input_tags.append(x_in.tag)
+                # input_tags.append(x_in.tag)
             else:
                 args.append(x_in)
 
@@ -59,21 +59,8 @@ class UncertainFunction(np.ndarray):
         if method == "at":  # In-place operations
             return None
 
-        # Determine the tag for the result
-        # Priority: self.tag (if self was an input), then first input_tag, then None
+        # The tag of the result is set to None
         result_tag = None
-        if (
-            isinstance(self, UncertainFunction)
-            and self.tag is not None
-            and self in inputs
-        ):  # Check if self was actually one of the ufunc inputs
-            result_tag = self.tag
-        elif input_tags:
-            # Find the first non-None tag from the inputs
-            for t in input_tags:
-                if t is not None:
-                    result_tag = t
-                    break
 
         if ufunc.nout == 1:
             if isinstance(results, np.ndarray):

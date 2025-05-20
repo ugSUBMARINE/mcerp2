@@ -24,7 +24,7 @@ With `mcerp2`, you can define variables with uncertainties using various statist
 *   **NumPy Integration:** Uncertain variables are `numpy.ndarray` subclasses, enabling direct use of many NumPy universal functions (ufuncs like `np.sqrt`, `np.exp`, `np.log`).
     *   *Status:* Implemented via `__array_ufunc__`. The `mcerp.umath` module from the original is no longer necessary; use `numpy` functions directly.
 *   **Statistical Distribution Constructors:** Easily define uncertain variables from `scipy.stats` distributions (e.g., Normal, Uniform, Exponential).
-    *   *Status:* A selection of common constructors (e.g., `N`, `U`, `Exp`, `Beta`, `Pois`) are available. More can be added.
+    *   *Status:* A selection of common constructors (e.g., `N`, `U`, `T`, `Exp`,`Beta`, `Binom`, `Pois`) are available. More can be added.
 *   **Latin Hypercube Sampling:** Efficiently samples input distributions for Monte Carlo simulation.
     *   *Status:* Randomized LHS is implemented and used by default.
 *   **Correlation Enforcement:** Impose a specified correlation structure on a set of uncertain variables.
@@ -50,7 +50,7 @@ With `mcerp2`, you can define variables with uncertainties using various statist
 
 ## Installation
 
-`mcerp2` works with Python 3.8+ and requires NumPy, and SciPy.
+`mcerp2` works with Python 3.10+ and requires NumPy, and SciPy.
 
 Currently, `mcerp2` is not yet on PyPI. To install it from this repository for development:
 
@@ -98,9 +98,11 @@ print(f"Area: {area.mean():.2f} +/- {area.std():.2f} cm^2")
 area.describe()
 
 # Probabilistic query
-prob_area_gt_50 = (area > 50.0).mean() # P(Area > 50) using element-wise comparison
+# P(Area > 50) using element-wise comparison
+prob_area_gt_50 = (area > 50.0).mean()
+print(f"Probability Area > 50 cm^2: {prob_area_gt_50:.3f}")
 # or using explicit method:
-# prob_area_gt_50_alt = area.sf(50.0)
+prob_area_gt_50_alt = area.sf(50.0)
 print(f"Probability Area > 50 cm^2: {prob_area_gt_50:.3f}")
 
 # Correlation example (simplified)
@@ -111,7 +113,14 @@ print(np.corrcoef(temp, press))  # Check correlation, should be close to 0.
 
 corr_matrix = np.array([[1.0, 0.7], [0.7, 1.0]])
 temp_corr, press_corr = correlate([temp, press], corr_matrix)
-print(np.corrcoef(temp_corr, press_corr))  # Check correlation, should be close to 0.7
+# Check correlation, should be close to 0.7
+print(np.corrcoef(temp_corr, press_corr))
+
+# Generate a UncertainVariable directly from a scipy.stats distribution
+from scipy import stats
+from mcerp2 import UncertainVariable
+rv = stats.norm(175., 5.)  # Normal distribution with mean=175, std=5
+height = UncertainVariable(rv, tag='height_cm')
 ```
 
 ## Contributing

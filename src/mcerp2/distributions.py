@@ -1,7 +1,7 @@
 # mcerp2/constructors.py
 from __future__ import annotations
 from scipy import stats
-from .core import UncertainVariable, config  # Import uv (UncertainVariable) and config
+from .core import UncertainVariable
 
 
 # --- CONTINUOUS DISTRIBUTIONS ---
@@ -58,6 +58,31 @@ def Beta(
     )
 
 
+def T(
+    df: float, loc: float = 0.0, scale: float = 1.0, tag: str | None = None
+) -> UncertainVariable:
+    """A Student's T random variate."""
+    if not df > 0:
+        raise ValueError('T "df" (degrees of freedom) must be greater than zero')
+    if tag is None:
+        if loc != 0.0 or scale != 1.0:
+            tag = f"T(df={df}, loc={loc}, scale={scale})"
+        else:
+            tag = f"T(df={df})"
+    return UncertainVariable(stats.t(df=df, loc=loc, scale=scale), tag=tag)
+
+
+def LogNormal(mu: float, s: float, tag: str | None = None) -> UncertainVariable:
+    """A LogNormal random variate."""
+    if not s > 0:
+        raise ValueError('LogNormal "s" must be greater than zero')
+    if tag is None:
+        tag = f"LogNormal(s={s}, scale={mu})"
+    return UncertainVariable(stats.lognorm(s, scale=mu), tag=tag)
+
+
+LogN = LogNormal
+
 # TODO: Add more continuous distributions as needed
 
 
@@ -86,5 +111,21 @@ def Poisson(lamda: float, tag: str | None = None) -> UncertainVariable:
 
 
 Pois = Poisson
+
+
+def Binomial(n: int, p: float, tag: str | None = None) -> UncertainVariable:
+    """A Binomial random variate."""
+    if not (0 <= p <= 1):
+        raise ValueError(
+            'Binomial probability "p" must be between zero and one, inclusive'
+        )
+    if not n >= 0:
+        raise ValueError('Binomial "n" must be non-negative.')
+    if tag is None:
+        tag = f"Binomial(n={n}, p={p})"
+    return UncertainVariable(stats.binom(n=n, p=p), tag=tag)
+
+
+Bin = Binomial
 
 # TODO: Add more discrete distributions as needed

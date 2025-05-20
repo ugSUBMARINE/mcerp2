@@ -2,8 +2,10 @@ from __future__ import annotations
 import numpy as np
 from numpy.typing import NDArray
 
-def _generate_lhs_unit_hypercube(num_samples: int, num_dimensions: int, *,
-                                 rng: np.random.Generator | None = None) -> NDArray:
+
+def _generate_lhs_unit_hypercube(
+    num_samples: int, num_dimensions: int, *, rng: np.random.Generator | None = None
+) -> NDArray:
     """
     Generates a Latin Hypercube sample in the unit hypercube [0,1]^num_dimensions.
     Each column's samples are independently permuted.
@@ -37,21 +39,24 @@ def _generate_lhs_unit_hypercube(num_samples: int, num_dimensions: int, *,
         # segmentMin = i * segmentSize
         # point = segmentMin + (rng.random() * segmentSize)
         # This is equivalent to:
-        stratum_indices = np.arange(num_samples) # 0, 1, ..., N-1
+        stratum_indices = np.arange(num_samples)  # 0, 1, ..., N-1
         random_offsets_in_strata = rng.uniform(low=0.0, high=1.0, size=num_samples)
 
         # Points in [0,1) ensuring one per stratum, then shuffle
         # Points are (idx + offset)/N
-        points_in_unit_interval = (stratum_indices + random_offsets_in_strata) / num_samples
+        points_in_unit_interval = (
+            stratum_indices + random_offsets_in_strata
+        ) / num_samples
 
         # Shuffle these points for this dimension independently
         lhs_samples[:, j] = rng.permutation(points_in_unit_interval)
 
     return lhs_samples
 
-def _apply_ppf_to_lhs(lhs_unit_samples: NDArray,
-                      distributions: list | tuple,
-                      single_dist_dims: int = 1) -> NDArray:
+
+def _apply_ppf_to_lhs(
+    lhs_unit_samples: NDArray, distributions: list | tuple, single_dist_dims: int = 1
+) -> NDArray:
     """
     Applies the Percent Point Function (PPF) of given distributions
     to LHS samples from the unit hypercube.
@@ -89,24 +94,24 @@ def _apply_ppf_to_lhs(lhs_unit_samples: NDArray,
         dist_obj = distributions
         if not hasattr(dist_obj, "ppf"):
             raise TypeError("Distribution object must have a 'ppf' method.")
-        if num_dimensions != single_dist_dims: # Check if lhs_unit_samples has expected columns
+        if num_dimensions != single_dist_dims:
+            # Check if lhs_unit_samples has expected columns
             raise ValueError(
                 f"LHS unit samples have {num_dimensions} dimensions, but single_dist_dims is {single_dist_dims}."
             )
-        for i in range(num_dimensions): # num_dimensions here should be single_dist_dims
+        # num_dimensions here should be single_dist_dims
+        for i in range(num_dimensions):
             transformed_samples[:, i] = dist_obj.ppf(lhs_unit_samples[:, i])
 
     return transformed_samples
 
 
 def lhd(
-        dist, # Can be a single scipy.stats.rv_frozen or a list/tuple of them
-        size: int, # Number of samples
-        dims: int = 1, # Number of dimensions if 'dist' is a single distribution
-        # 'form', 'iterations' are currently non-functional as per original, so omitted for now
-        # Re-add them if implementing space-filling or orthogonal LHS variations.
-        *,
-        rng: np.random.Generator | None = None # For reproducibility
+    dist,
+    size: int,
+    dims: int = 1,
+    *,
+    rng: np.random.Generator | None = None,
 ) -> NDArray:
     """
     Create a Latin Hypercube Sample design.
@@ -131,6 +136,8 @@ def lhd(
     np.ndarray
         A 2D array of shape (size, num_variables) containing the LHS samples.
         `num_variables` is `len(dist)` if `dist` is a sequence, otherwise it's `dims`.
+
+    Comments: 'form', 'iterations' are currently non-functional as per original, so omitted for now
     """
     if not isinstance(size, int) or size <= 0:
         raise ValueError("'size' must be a positive integer.")
@@ -145,15 +152,15 @@ def lhd(
         num_vars = dims
 
     # 1. Generate LHS samples in the unit hypercube [0,1]^num_vars
-    unit_lhs_samples = _generate_lhs_unit_hypercube(num_samples=size,
-                                                    num_dimensions=num_vars,
-                                                    rng=rng)
+    unit_lhs_samples = _generate_lhs_unit_hypercube(
+        num_samples=size, num_dimensions=num_vars, rng=rng
+    )
 
     # 2. Transform these unit samples using the PPF of the given distribution(s)
     # The _apply_ppf_to_lhs function needs to know if 'dist' was single or a list.
     # We pass 'dims' to it as single_dist_dims for that distinction.
-    final_lhs_samples = _apply_ppf_to_lhs(unit_lhs_samples,
-                                          distributions=dist,
-                                          single_dist_dims=dims)
+    final_lhs_samples = _apply_ppf_to_lhs(
+        unit_lhs_samples, distributions=dist, single_dist_dims=dims
+    )
 
     return final_lhs_samples

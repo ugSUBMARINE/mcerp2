@@ -15,9 +15,11 @@ __author__ = "Karl Gruber"
 # The primary way to create an uncertain variable
 uv = UncertainVariable
 
+
 # Expose npts directly and provide a setter function
 def get_npts() -> int:
     return mcerp_config.npts
+
 
 def set_npts(new_npts: int) -> None:
     if not isinstance(new_npts, int) or new_npts <= 0:
